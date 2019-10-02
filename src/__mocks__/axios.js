@@ -1,3 +1,3 @@
 export default {
-  get: jest.fn(() => Promise.resolve({ data: { omg: 1 } }))
+  request: jest.fn(() => Promise.resolve({ data: { omg: 1 } }))
 };
