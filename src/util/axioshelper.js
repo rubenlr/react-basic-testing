@@ -51,23 +51,38 @@ async function execute(
         resp204(result.data, result);
       }
     }
-  } catch (error) {
-    const { status } = error;
+  } catch (err) {
+    if (error) {
+      error(err);
+    }
 
-    if (status >= 400 && status < 500) {
-      if (error40X) {
-        error40X(error.data, error);
+    if (err) {
+      const { status, code } = err;
+
+      if (code === "ECONNABORTED" && errorConnectionAbort) {
+        errorConnectionAbort(err);
       }
-      if (status === 400 && error400) {
-        error400(error.data, error);
-      } else if (status === 403 && error403) {
-        error403(error.data, error);
-      } else if (status === 404 && error404) {
-        error404(error.data, error);
-      }
-    } else if (status >= 500 && status < 600) {
-      if (status === 500) {
-        error500(error.data, error);
+
+      const errorString = err.toString().toLowerCase();
+      const networkError = errorString.indexOf("network error") > -1;
+
+      if (networkError && errorServerNotFound) {
+        errorServerNotFound(err);
+      } else if (status >= 400 && status < 500) {
+        if (error40X) {
+          error40X(err.data, err);
+        }
+        if (status === 400 && error400) {
+          error400(err.data, err);
+        } else if (status === 403 && error403) {
+          error403(err.data, err);
+        } else if (status === 404 && error404) {
+          error404(err.data, err);
+        }
+      } else if (status >= 500 && status < 600) {
+        if (status === 500) {
+          error500(err.data, err);
+        }
       }
     }
   } finally {

@@ -166,6 +166,42 @@ describe("Axios helper Test", () => {
       expect(resp500Mock).toBeCalledWith(data, resp);
     });
 
+    it("Fetch - Should handle connection abort correcly", async () => {
+      const connAbortMock = jest.fn();
+      const error = jest.fn();
+
+      mockAxios.request.mockImplementationOnce(() =>
+        Promise.reject({ code: "ECONNABORTED" })
+      );
+
+      await Fetch({
+        url: "abc123alksdf.com.br",
+        errorConnectionAbort: connAbortMock,
+        error: error
+      });
+
+      expect(connAbortMock).toHaveBeenCalled();
+      expect(error).toHaveBeenCalled();
+    });
+
+    it("Fetch - Should handle connection server not found correcly", async () => {
+      const serverNotFound = jest.fn();
+      const error = jest.fn();
+
+      mockAxios.request.mockImplementationOnce(() =>
+        Promise.reject("network error")
+      );
+
+      await Fetch({
+        url: "abc123alksdf.com.br",
+        errorServerNotFound: serverNotFound,
+        error: error
+      });
+
+      expect(serverNotFound).toHaveBeenCalled();
+      expect(error).toHaveBeenCalled();
+    });
+
     it("Fetch - Should aways use begin/end on every call", async () => {
       const beginLoadingMock = jest.fn();
       const endLoadingMock = jest.fn();
